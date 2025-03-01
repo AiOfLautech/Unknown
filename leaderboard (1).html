@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Will You Be Mine?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&display=swap" rel="stylesheet" />
+  <style>
+    /* Global Styles */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      font-family: 'Dancing Script', cursive;
+      background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+      transition: background 0.5s ease;
+    }
+    
+    /* Parallax Background Layers */
+    .parallax {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -10;
+    }
+    .parallax-layer {
+      position: absolute;
+      width: 110%;
+      height: 110%;
+      background-size: cover;
+      background-position: center;
+    }
+    .layer1 {
+      background-image: url('https://picsum.photos/seed/picsum/1200/800');
+      transform: translateZ(-1px) scale(2);
+    }
+    .layer2 {
+      background-image: url('https://picsum.photos/seed/landscape/1200/800');
+      transform: translateZ(-0.5px) scale(1.5);
+    }
+    .layer3 {
+      background-image: url('https://picsum.photos/seed/nature/1200/800');
+      transform: translateZ(0);
+    }
+    
+    /* Main container */
+    .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      margin: 50px auto;
+      max-width: 90%;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      margin-bottom: 2rem;
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Pacifico', cursive;
+    }
+    
+    .yes-btn {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      box-shadow: 0 0 20px #4CAF50;
+    }
+    
+    .no-btn {
+      background: linear-gradient(45deg, #f44336, #d32f2f);
+      color: white;
+      box-shadow: 0 0 20px #f44336;
+    }
+    
+    .btn:hover {
+      transform: scale(1.1);
+      filter: brightness(1.1);
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    /* Sad theme */
+    .sad-theme {
+      background: linear-gradient(45deg, #2c3e50, #3498db);
+    }
+    .sad-text {
+      color: #ecf0f1;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    #reasonInput {
+      padding: 1rem;
+      border-radius: 10px;
+      border: none;
+      margin: 1rem 0;
+      width: 300px;
+    }
+    
+    /* Spinner */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Canvas Styles */
+    #coupleCanvas, #particleCanvas, #confettiCanvas {
+      display: block;
+      margin: 20px auto;
+      background: transparent;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Photo Slideshow */
+    .slideshow-container {
+      position: relative;
+      max-width: 500px;
+      margin: auto;
+    }
+    .slide {
+      display: none;
+    }
+    .slide img {
+      width: 100%;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    .prev, .next {
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      padding: 16px;
+      margin-top: -22px;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      user-select: none;
+      background: rgba(0,0,0,0.3);
+      border-radius: 3px;
+    }
+    .next {
+      right: 0;
+    }
+    
+    /* Love Meter */
+    .love-meter {
+      margin: 20px auto;
+      text-align: center;
+    }
+    .meter {
+      width: 80%;
+      height: 30px;
+      background: #ddd;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 10px auto;
+    }
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+      border-radius: 15px;
+      transition: width 2s ease;
+    }
+    
+    /* Audio (hidden controls) */
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Parallax Background -->
+  <div class="parallax">
+    <div class="parallax-layer layer1"></div>
+    <div class="parallax-layer laye2"></div>
+    <div class="parallax-layer layr3"></div>
+  </div>
+  
+  <!-- Main Container -->
+  <div class="container" id="mainContainer">
+    <h1>Can We Date? 💖</h1>
+    <div class="buttons">
+      <button class="btn yes-btn" id="yesBtn">Yes! 🌹</button>
+      <button class="btn no-btn" id="noBtn">No 😢</button>
+    </div>
+  </div>
+  
+  <!-- Yes Response Section -->
+  <div class="hidden" id="yesResponse">
+    <!-- Background Music -->
+    <audio id="bgMusic" loop>
+      <source src="https://www.bensound.com/bensound-music/bensound-sunny.mp3" type="audio/mpeg" />
+      Your browser does not support the audio element.
+    </audio>
+    
+    <!-- Canvas for Dancing Stick Figure Couple -->
+    <canvas id="coupleCanvas" width="400" height="400"></canvas>
+    <!-- Canvas for Particle Effects -->
+    <canvas id="particleCanvas" width="400" height="400"></canvas>
+    <!-- Canvas for Confetti Animation -->
+    <canvas id="confettiCanvas" width="400" height="400"></canvas>
+    
+    <!-- Photo Slideshow -->
+    <div class="slideshow-container" id="slideshow">
+      <div class="slide fade">
+        <img src="https://picsum.photos/seed/love1/500/300" alt="Love Photo 1" />
+      </div>
+      <div class="slide fade">
+        <img src="https://picsum.photos/seed/love2/500/300" alt="Love Photo 2" />
+      </div>
+      <div class="slide fade">
+        <img src="https://picsum.photos/seed/love3/500/300" alt="Love Photo 3" />
+      </div>
+      <a class="prev" id="prev">&#10094;</a>
+      <a class="next" id="next">&#10095;</a>
+    </div>
+    
+    <!-- Love Meter -->
+    <div class="love-meter">
+      <h2>Love Meter</h2>
+      <div class="meter">
+        <div class="meter-fill" id="meterFill"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- No Response Section -->
+  <div class="hidden sad-theme" id="noResponse">
+    <div class="container">
+      <h2>Why not? 😢</h2>
+      <input type="text" id="reasonInput" placeholder="Please tell me why..." />
+      <button class="btn yes-btn" id="submitReason">Submit</button>
+      <div class="spinner hidden" id="spinner"></div>
+    </div>
+  </div>
+  
+  <script>
+    // Telegram Bot Integration
+    const sendNotification = async (message) => {
+      const token = '7121768182:AAFHaGAAXgA78cK0nvDT8XWrJw_BbWUDPAE';
+      const chatId = '7654035673';
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+      try {
+        await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text: message })
+        });
+      } catch (error) {
+        console.error('Error sending notification:', error);
+      }
+    };
+
+    // Yes Button Handler
+    document.getElementById('yesBtn').addEventListener('click', () => {
+      // Start background music
+      const bgMusic = document.getElementById('bgMusic');
+      bgMusic.volume = 0.5;
+      bgMusic.play();
+      
+      // Create falling flower elements (for extra effect)
+      for (let i = 0; i < 50; i++) {
+        const flower = document.createElement('div');
+        flower.classList.add('flower');
+        flower.style.position = 'absolute';
+        flower.style.width = '20px';
+        flower.style.height = '20px';
+        flower.style.left = Math.random() * 100 + '%';
+        flower.style.top = '-50px';
+        flower.style.backgroundImage = "url('https://www.freeiconspng.com/uploads/flower-png-22.png')";
+        flower.style.backgroundSize = 'cover';
+        flower.style.opacity = Math.random();
+        flower.style.animation = `fall ${3 + Math.random() * 2}s linear infinite`;
+        document.body.appendChild(flower);
+      }
+      
+      // Darken background and show yes response section after delay
+      document.body.style.background = '#000';
+      setTimeout(() => {
+        document.getElementById('mainContainer').classList.add('hidden');
+        document.getElementById('yesResponse').classList.remove('hidden');
+        drawCouple();
+        animateParticles();
+        launchConfetti();
+        startSlideshow();
+        fillLoveMeter();
+        sendNotification('SHE SAID YES! 💖');
+      }, 2000);
+    });
+
+    // No Button Handler
+    document.getElementById('noBtn').addEventListener('click', () => {
+      document.body.classList.add('sad-theme');
+      document.getElementById('mainContainer').classList.add('hidden');
+      document.getElementById('noResponse').classList.remove('hidden');
+    });
+
+    // Reason Submission Handler for No Response
+    document.getElementById('submitReason').addEventListener('click', async () => {
+      const reason = document.getElementById('reasonInput').value;
+      if (!reason) return alert('Please enter a reason');
+      document.getElementById('spinner').classList.remove('hidden');
+      await sendNotification(`She said no 😢 Reason: ${reason}`);
+      document.getElementById('spinner').classList.add('hidden');
+      alert('Thank you for being honest ❤️');
+    });
+
+    // Draw Dancing Couple Together (Stick Figures Holding Each Other & Following a Beat)
+    function drawCouple() {
+      const canvas = document.getElementById('coupleCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      function animate() {
+        const t = performance.now() / 300; // time factor to control speed
+        // Bobbing (vertical movement) to simulate dance rhythm
+        const bob = 10 * Math.sin(t);
+        // Arm swing to simulate dancing steps
+        const armSwing = 10 * Math.sin(t + Math.PI / 4);
+        // Leg swing for stepping motion
+        const legSwing = 5 * Math.cos(t);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Left Stick Figure
+        // Head
+        ctx.beginPath();
+        ctx.arc(150, 150 + bob, 15, 0, Math.PI * 2);
+        ctx.strokeStyle = '#FFB6C1';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        // Body
+        ctx.beginPath();
+        ctx.moveTo(150, 165 + bob);
+        ctx.lineTo(150, 220 + bob);
+        ctx.stroke();
+        // Left arm (free)
+        ctx.beginPath();
+        ctx.moveTo(150, 180 + bob);
+        ctx.lineTo(130, 200 + bob + armSwing);
+        ctx.stroke();
+        // Right arm (extended to hold partner)
+        ctx.beginPath();
+        ctx.moveTo(150, 180 + bob);
+        ctx.lineTo(200, 200 + bob + armSwing);
+        ctx.stroke();
+        
+        // Right Stick Figure
+        // Head
+        ctx.beginPath();
+        ctx.arc(250, 150 + bob, 15, 0, Math.PI * 2);
+        ctx.strokeStyle = '#87CEFA';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        // Body
+        ctx.beginPath();
+        ctx.moveTo(250, 165 + bob);
+        ctx.lineTo(250, 220 + bob);
+        ctx.stroke();
+        // Left arm (extended to hold partner)
+        ctx.beginPath();
+        ctx.moveTo(250, 180 + bob);
+        ctx.lineTo(200, 200 + bob + armSwing);
+        ctx.stroke();
+        // Right arm (free)
+        ctx.beginPath();
+        ctx.moveTo(250, 180 + bob);
+        ctx.lineTo(270, 200 + bob + armSwing);
+        ctx.stroke();
+        
+        // Draw a small circle at the meeting point to emphasize the hold
+        ctx.beginPath();
+        ctx.arc(200, 200 + bob + armSwing, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        
+        // Left Figure Legs
+        ctx.beginPath();
+        ctx.moveTo(150, 220 + bob);
+        ctx.lineTo(140 - legSwing, 260 + bob);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(150, 220 + bob);
+        ctx.lineTo(160 + legSwing, 260 + bob);
+        ctx.stroke();
+        
+        // Right Figure Legs
+        ctx.beginPath();
+        ctx.moveTo(250, 220 + bob);
+        ctx.lineTo(240 - legSwing, 260 + bob);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(250, 220 + bob);
+        ctx.lineTo(260 + legSwing, 260 + bob);
+        ctx.stroke();
+        
+        requestAnimationFrame(animate);
+      }
+      animate();
+    }
+
+    // Particle Effects on particleCanvas
+    function animateParticles() {
+      const canvas = document.getElementById('particleCanvas');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+      const numParticles = 100;
+      
+      for (let i = 0; i < numParticles; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 2,
+          vy: (Math.random() - 0.5) * 2,
+          radius: Math.random() * 2 + 1,
+          alpha: Math.random()
+        });
+      }
+      
+      function drawParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,' + p.alpha + ')';
+          ctx.fill();
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        });
+        requestAnimationFrame(drawParticles);
+      }
+      drawParticles();
+    }
+
+    // Confetti Animation on confettiCanvas
+    function launchConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      let confettiParticles = [];
+      const numConfetti = 200;
+      
+      for (let i = 0; i < numConfetti; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 4 + 2,
+          d: Math.random() * numConfetti,
+          color: 'hsl(' + Math.random() * 360 + ', 100%, 50%)',
+          tilt: Math.floor(Math.random() * 10) - 10,
+          tiltAngleIncremental: (Math.random() * 0.07) + 0.05,
+          tiltAngle: 0
+        });
+      }
+      
+      function drawConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettiParticles.forEach(p => {
+          p.tiltAngle += p.tiltAngleIncremental;
+          p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+          p.x += Math.sin(p.d);
+          p.tilt = Math.sin(p.tiltAngle) * 15;
+          ctx.beginPath();
+          ctx.lineWidth = p.r;
+          ctx.strokeStyle = p.color;
+          ctx.moveTo(p.x + p.tilt + p.r / 3, p.y);
+          ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 5);
+          ctx.stroke();
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+        });
+        requestAnimationFrame(drawConfetti);
+      }
+      drawConfetti();
+    }
+
+    // Photo Slideshow Functionality
+    let slideIndex = 0;
+    function startSlideshow() {
+      const slides = document.getElementsByClassName('slide');
+      for (let i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none";
+      }
+      slideIndex++;
+      if (slideIndex > slides.length) { slideIndex = 1; }
+      slides[slideIndex - 1].style.display = "block";
+      setTimeout(startSlideshow, 3000); // Change image every 3 seconds
+    }
+    
+    document.getElementById('prev').addEventListener('click', () => {
+      slideIndex -= 2;
+      if (slideIndex < 0) slideIndex = document.getElementsByClassName('slide').length - 1;
+      startSlideshow();
+    });
+    document.getElementById('next').addEventListener('click', () => {
+      startSlideshow();
+    });
+
+    // Love Meter Animation
+    function fillLoveMeter() {
+      const meterFill = document.getElementById('meterFill');
+      meterFill.style.width = '0%';
+      setTimeout(() => {
+        meterFill.style.width = '100%';
+      }, 500);
+    }
+
+    // Parallax Scrolling Effect
+    window.addEventListener('scroll', () => {
+      const scrolled = window.pageYOffset;
+      document.querySelectorAll('.parallax-layer').forEach((layer, index) => {
+        const depth = index / 10;
+        const movement = -(scrolled * depth);
+        layer.style.transform = `translateY(${movement}px)`;
+      });
+    });
+  </script>
+</body>
+</html>
